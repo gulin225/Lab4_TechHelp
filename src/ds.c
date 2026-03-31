@@ -17,21 +17,43 @@
 
 /* TODO 1 */
 Node *create_question_node(const char *question) {
-    return NULL;
+    Node* questionNode = malloc(sizeof(Node));
+    questionNode->isQuestion = 1;
+    questionNode->text = question;
+    questionNode->yes = NULL;
+    questionNode->no = NULL;
+    return questionNode;
 }
 
 /* TODO 2 */
 Node *create_solution_node(const char *solution) {
-    return NULL;
+    Node* solutionNode = malloc(sizeof(Node));
+    solutionNode->isQuestion = 0;
+    solutionNode->text = solution;
+    solutionNode->yes = NULL;
+    solutionNode->no = NULL;
+    return solutionNode;
 }
 
 /* TODO 3  (recursion allowed) */
 void free_tree(Node *node) {
+    if(node == NULL){
+        return;
+    }
+    free_tree(node->yes);
+    free_tree(node->no);
+    free(node->text);
+    free(node);
+
 }
 
 /* TODO 4  (recursion allowed) */
 int count_nodes(Node *root) {
-    return 0;
+    if(root == NULL){
+        return 0;
+    }
+
+    return 1 + count_nodes(root->yes) + count_nodes(root->no);
 }
 
 
