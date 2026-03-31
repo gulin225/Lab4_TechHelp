@@ -58,20 +58,31 @@ int count_nodes(Node *root) {
 
 
 /* ====== FrameStack  (dynamic array, iterative traversal) ======== */
-
+//Dynamic array that doubles in capacity when full. After this, the stack unit tests should pass.
 /* TODO 5 */
 void fs_init(FrameStack *s) {
-
+    s->frames = NULL;
+    s->capacity = 1;
+    s->size = 0;
 }
 
 /* TODO 6 */
 void fs_push(FrameStack *s, Node *node, int answeredYes) {
+    if(s->capacity >= s->size){
+        s->capacity = s->capacity * 2;
+        s->frames= realloc(s->frames, sizeof(Frame*) * s->capacity);
+    }
+
+    Frame* dummy = malloc(sizeof(Frame));   
+
+    s->size = s->size + 1;
+
 }
 
 /* TODO 7 */
 Frame fs_pop(FrameStack *s) {
-    Frame dummy = {NULL, -1};
-    return dummy;
+    Frame* dummy = s->frames;
+    
 }
 
 /* TODO 8 */
