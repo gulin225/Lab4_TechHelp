@@ -335,17 +335,17 @@ void h_init(Hash *h, int nbuckets) {
 
 /* TODO 23 */
 int h_put(Hash *h, const char *key, int solutionId) {
-    unsigned hashNum = hash(key);
+    unsigned hashNum = h_hash(key);
 
     unsigned index = hashNum % h->nbuckets;
-    uint32_t i = 0;
+
 
     if(h->buckets[index] == NULL){
         Entry* dummy = malloc(sizeof(Entry));
         if(dummy == NULL){
             return 0;
         }
-        dummy->key = key;
+        dummy->key = strdup(key);
         dummy->next =NULL;
 
         dummy->vals.capacity = 1;
@@ -359,6 +359,9 @@ int h_put(Hash *h, const char *key, int solutionId) {
         dummy->vals.ids = temp;
 
         dummy->next = NULL;
+        
+        h->buckets[index] = dummy;
+        h->size = h->size + 1;
         return 1;
     }
     else{
@@ -368,42 +371,112 @@ int h_put(Hash *h, const char *key, int solutionId) {
             prev = current;
             
             if(strcmp(current->key,key) == 0){
+
                 if(current->vals.count >= current->vals.capacity){
                     current->vals.capacity*=2;
                     int* tempCap = realloc(current->vals.ids, sizeof(int) * current->vals.capacity);
                     if(tempCap == NULL){
                         return 0;
                     }
+                    current->vals.ids = tempCap;
+                    
+                }
+
+
 
                     current->vals.count = current->vals.count + 1;
-                    current->vals.ids = tempCap;
+                    
                     current->vals.ids[current->vals.count - 1] = solutionId; //setting the value at the index = to the solutionid
                     return 1;
                 }
-            }
+            
             
             current = current->next;
-            
-        }
+            }
+        
 
+        //if we didn't have a bucket with the same key, now we are here, and we must create a new entry
+        Entry* newLink = malloc(sizeof(Entry));
+        if(newLink == NULL){
+            return 0;
+        }
+        newLink->key = strdup(key);
+        newLink->next = NULL;
+        prev->next = newLink;
+
+        newLink->vals.capacity = 1;
+        newLink->vals.count = 1;
+        int* newLinkArr = malloc(newLink->vals.capacity * sizeof(int));
+        if(newLinkArr == NULL){
+            free(newLink->key);
+            free(newLink);
+            return 0;
+        }
+        newLinkArr[0] = solutionId;
+        newLink->vals.ids = newLinkArr;
+        h->size = h->size + 1;
+        return 1;
     
 
     }
 
-
 }
+
+
+
 
 /* TODO 24 */
 int h_contains(const Hash *h, const char *key, int solutionId) {
+    unsigned hashNum = h_hash(key);
+    unsigned index = hashNum % h->nbuckets;
+    if(h->buckets[index] != NULL){
+        Entry* current = h->buckets[index];
+        while(current != NULL){
+            if(strcmp(current->key, key) == 0){
+                for(int i = 0; i < current->vals.count; i++){
+                    if(current->vals.ids[i] == solutionId){
+                        return 1;
+                    }
+                }
+            }
+            current = current->next;
+        }
+    }
     return 0;
 }
 
 /* TODO 25 */
 int *h_get_ids(const Hash *h, const char *key, int *outCount) {
     *outCount = 0;
+
+    unsigned hashNum = h_hash(key);
+    unsigned index = hashNum % h->nbuckets;
+    
+    Entry* current = h->buckets[index];
+    while(current != NULL){
+        if(strcmp(current->key, key) == 0){
+            int count = current->vals.count;
+            *outCount = count;
+            return current->vals.ids;
+        }
+        current = current->next;
+    }
+
     return NULL;
 }
 
 /* TODO 26 */
 void h_free(Hash *h) {
+    for(int i =0; i < h->nbuckets; i++){
+        Entry* current = h->buckets[i];
+        while(current != NULL){
+            Entry* next = current->next;
+            free(current->vals.ids);
+            free(current->key);
+            free(current);
+            current = next;
+        }
+        
+    }
+    free(h->buckets);
 }
