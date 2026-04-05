@@ -125,12 +125,35 @@ void find_shortest_path(const char *sol1, const char *sol2) {
     root.current = g_root;
     root.parentIndex = -1;
     root.branch = -1;
-    int nextIndex = 0;
+    int index = 0;
 
     pathNodeArr[0] = root;
-    while(!(fs_empty)){
-        Frame f = fs_pop;
+    while(!(fs_empty(fs))){
+        int32_t parentIndex = -1;
+        int32_t branch = -1;
+        Frame f = fs_pop(fs);
         Node* current = f.node;
+
+        pathNodeArr[index].current = current;
+        if(index != 0){ //its not the root
+            for(int i =0; i < index; i++){
+                if(pathNodeArr[i].current->yes == current){
+                    parentIndex = i;
+                    branch = 1;
+                }
+                else if(pathNodeArr[i].current->no == current){
+                    parentIndex = i;
+                    branch = 0;
+                }
+            }
+            pathNodeArr[index].parentIndex = parentIndex;
+           //add branach to struct here
+        }
+        index++;
+        if(current->isQuestion){
+        fs_push(fs, current->yes, 1)
+        fs_push(fs, current->no, 0)
+        }
     }
 
     mvprintw(10, 2, "find_shortest_path not yet implemented.");
