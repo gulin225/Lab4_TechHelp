@@ -20,6 +20,9 @@ int check_integrity(void) {
     }
 
     Queue* q = malloc(sizeof(Queue));
+    if(q == NULL){
+        return 0;
+    }
     q_init(q);
     int idNum = 0;
     q_enqueue(q, g_root,idNum);
@@ -83,13 +86,53 @@ int check_integrity(void) {
  *
  * Display results with mvprintw.  Print an error if either
  * solution is not found.  Free all allocations before returning.
+ //Can use DFS
  * ---------------------------------------------------------------- */
 void find_shortest_path(const char *sol1, const char *sol2) {
+    typedef struct PathNode{
+        Node* current;
+        int32_t parentIndex; 
+        int32_t branch; // root = -1 1 = yes 0 = no
+    }PathNode;
+
+
     if (g_root == NULL) {
         mvprintw(10, 2, "Error: knowledge base is empty.");
         refresh();
         return;
     }
+
+    int nodeCount = count_nodes(g_root);
+    if(nodeCount <= 0){
+        mvprintw(10, 2, "Error: knowledge base is empty.");
+        refresh();
+        return;
+    }
+
+    PathNode* pathNodeArr = calloc(nodeCount, sizeof(PathNode));
+    if(pathNodeArr == NULL){
+        mvprintw(10, 2, "Error: Memory Allocation Failure");
+        refresh();
+        return;
+    }
+    FrameStack* fs = malloc(sizeof(FrameStack));
+    fs_init(fs);
+    int sol1Idx = -1; //given from AI
+    int sol2Idx = -1;// given from AI
+
+    fs_push(fs,g_root,-1);
+    PathNode root;
+    root.current = g_root;
+    root.parentIndex = -1;
+    root.branch = -1;
+    int nextIndex = 0;
+
+    pathNodeArr[0] = root;
+    while(!(fs_empty)){
+        Frame f = fs_pop;
+        Node* current = f.node;
+    }
+
     mvprintw(10, 2, "find_shortest_path not yet implemented.");
     refresh();
 }
