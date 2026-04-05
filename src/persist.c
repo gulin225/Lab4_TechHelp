@@ -180,5 +180,176 @@ int save_tree(const char *filename) {
  * Return 1 on success, 0 on any error (free partial allocations).
  * ---------------------------------------------------------------- */
 int load_tree(const char *filename) {
-    return 0;
+    FILE* fp;
+
+     if(filename == NULL){
+        return 0;
+    }
+
+    fp = fopen(filename, "rb"); //googled this, here we are reading from the file
+    if(fp == NULL){
+
+        return 0;
+    }
+
+uint32_t magic = MAGIC;
+uint32_t magicCheck;
+uint32_t version = VERSION;
+uint32_t versionCheck;
+uint32_t nodeCount;
+
+
+    if(fread(&magicCheck, sizeof(uint32_t), 1, fp) != 1){
+        fclose(fp);
+        return 0;
+    }
+
+    if(magicCheck != magic){
+            fclose(fp); //magic number is not matching
+            return 0;
+    }
+
+    
+    if(fread(&versionCheck, sizeof(uint32_t), 1, fp) != 1){
+        fclose(fp);
+        return 0;
+    }
+    
+    if(versionCheck != version){
+        fclose(fp);
+        return 0;
+    }
+
+    if(fread(&nodeCount, sizeof(uint32_t), 1, fp) != 1){ //node count now has the number of nodes
+        fclose(fp);
+        return 0;
+    }
+
+
+
+    Node** nodeArr = malloc(sizeof(Node*) * nodeCount);
+    if(nodeArr == NULL){
+        fclose(fp);
+        return 0;
+    }
+    int32_t* yesIdArr = malloc(sizeof(int32_t) * nodeCount);
+    if(yesIdArr == NULL){
+        free(nodeArr);
+        fclose(fp);
+        return(0);
+    }
+    int32_t* noIdArr = malloc(sizeof(int32_t) * nodeCount);
+        if(noIdArr == NULL){
+        free(nodeArr);
+        free(yesIdArr);
+        fclose(fp);
+        return(0);
+    }
+
+    for(int i = 0; i < nodeCount; i++){//this is the first loop, looking to just get the information and reading it, 
+        //on second loop we must link the children, same logic as before, checking if the yesID of the current one equald the id of the
+        //current node we are looking at
+       uint8_t isQuestion;
+       uint32_t textLen;
+       int32_t yesId = -1;
+       int32_t noId = -1;
+
+       if(fread(&isQuestion, sizeof(uint8_t), 1, fp)!= 1){
+        fclose(fp);
+        free(nodeArr);
+        free(yesIdArr);
+        free(noIdArr);
+        return 0;
+       }
+
+       if(fread(&textLen, sizeof(uint32_t), 1, fp)!= 1){
+        fclose(fp);
+        return 0;
+       }
+
+       char* text = malloc((textLen + 1) * sizeof(char));
+       if(text == NULL){
+        fclose(fp);
+        free(nodeArr);
+        free(yesIdArr);
+        free(noIdArr);
+        return 0;
+       }
+
+       if(fread(text, sizeof(char), textLen, fp) != textLen){
+        fclose(fp);
+        free(nodeArr);
+        free(yesIdArr);
+        free(noIdArr);
+        free(text);
+        return 0;
+       }
+       text[textLen] = 0;
+
+       if(fread(&yesId, sizeof(int32_t), 1, fp) != 1){
+        fclose(fp);
+        free(text);
+        free(nodeArr);
+        free(yesIdArr);
+        free(noIdArr);
+        return 0;
+       }
+
+       if(fread(&noId, sizeof(int32_t), 1, fp) != 1){
+        fclose(fp);
+        free(text);
+        free(nodeArr);
+        free(yesIdArr);
+        free(noIdArr);
+        return 0;
+       }
+
+
+       if(isQuestion){ //if its a 1, we create a question node
+        nodeArr[i] = create_question_node(text);
+       }
+       else{
+        nodeArr[i] = create_solution_node(text);
+       }
+       free(text); //the creation of the node mallocs its own text
+       yesIdArr[i] = yesId;
+       noIdArr[i] = noId;
+
+
+
+    }
+//      *     uint8  isQuestion
+//  *     uint32 textLen          (bytes, no null terminator in file)
+//  *     char[] text             (exactly textLen bytes)
+//  *     int32  yesId            (-1 if NULL)
+//  *     int32  noId             (-1 if NULL)
+//  *
+
+    for(int i =0; i < nodeCount; i++){ //we do this in the 2nd loop because we dont knowif that node has been created yet in the firs tloop
+        int indexYesID = yesIdArr[i];
+        int indexNoId = noIdArr[i];
+
+        if(indexYesID != -1){
+        nodeArr[i]->yes = nodeArr[indexYesID];
+        }
+        else{
+            nodeArr[i]->yes = NULL;
+        }
+        if(indexNoId != -1){
+        nodeArr[i]->no = nodeArr[indexNoId];
+        }
+        else{
+            nodeArr[i]->no = NULL;
+        }
+
+    }
+    free_tree(g_root); //free the old tree
+    g_root = nodeArr[0]; //set the g_root to the node of the new tree
+    free(nodeArr);
+    free(yesIdArr);
+    free(noIdArr);
+    fclose(fp);
+
+    return 1;
+
 }
