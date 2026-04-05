@@ -15,7 +15,60 @@ extern Node *g_root;
  * Return 1 if valid, 0 if any violation is found.
  * ---------------------------------------------------------------- */
 int check_integrity(void) {
+    if(g_root == NULL){
+        return 1; //there is no parent node, error
+    }
+
+    Queue* q = malloc(sizeof(Queue));
+    q_init(q);
+    int idNum = 0;
+    q_enqueue(q, g_root,idNum);
+
+    while(!(q_empty(q))){
+        Node* getNode;
+        int getId;
+        q_dequeue(q, &getNode, &getId);
+        if(getNode->isQuestion){
+            if(getNode->yes == NULL){
+                q_free(q);
+                free(q);
+                return 0; //violation
+            }
+            if(getNode->no == NULL){
+                q_free(q);
+                free(q);
+                return 0; //violation
+            }
+        if(getNode->yes != NULL){
+            idNum++;
+            q_enqueue(q, getNode->yes, idNum);
+        }
+        if(getNode->no != NULL){
+            idNum++;
+            q_enqueue(q, getNode->no, idNum);
+        }
+        }
+        else{
+            if(getNode->yes != NULL){
+                q_free(q);
+                free(q);
+                return 0; //violation 
+            }
+            if(getNode->no != NULL){
+                q_free(q);
+                free(q);
+                return 0; //violation
+            }
+
+        }
+
+      
+
+    }
+    //BFS, queue root, while(queue not empty) dequee(), processnode , enqueue left, enqueue right 
+    q_free(q);
     return 1;
+
 }
 
 /* ----------------------------------------------------------------
