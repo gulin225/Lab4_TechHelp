@@ -28,18 +28,7 @@ extern Hash       g_index;
  *
  * Edge case: if parent is NULL the root itself must be replaced.
 
- HINT
- ## TODO 31: `run_diagnosis`
-
-The most important thing to get right before writing the loop is parent tracking. You need to know, when you reach a solution leaf, which question node was its parent and which branch (yes or no) was taken to reach it.
-
-Initialize two variables *outside* the loop. Update them *every time* you visit a question node — not just the first time.
-
-The edge case: if the very first node in the tree is a solution leaf (no questions at all), `parent` is still NULL when the learning phase runs. The root itself must be replaced. Your Edit record needs a way to signal this case so undo can reverse it correctly.
-
-`get_input` returns a pointer to a static buffer. The next call to `get_input` overwrites that same buffer. Copy the result to a local array before calling `get_input` again.
-
----
+ 
 
  * ---------------------------------------------------------------- */
 void run_diagnosis(void) {
@@ -48,6 +37,7 @@ void run_diagnosis(void) {
     mvprintw(0, 0, "%-80s", " Tech Support Diagnosis");
     attroff(COLOR_PAIR(5) | A_BOLD);
 
+
     mvprintw(2, 2, "I'll help diagnose your tech problem.");
     mvprintw(3, 2, "Answer each question with y or n.");
     mvprintw(4, 2, "Press any key to start...");
@@ -55,10 +45,61 @@ void run_diagnosis(void) {
     getch();
 
     FrameStack stack;
-    fs_init(&stack);
+    fs_init(&stack); 
+    int questionCount = 0;
+    int row = 4;
+    if(g_root == NULL) //if the root is empty, we must replace the root instead of adding a leaf
+    {
 
+    }
+    fs_push(&stack, g_root, -1); 
     /* TODO: implement */
+    while(!fs_empty(&stack)){
+        Frame f = fs_pop(&stack);
+        Node* current = f.node;
 
+        if(current->isQuestion == 1){ //if its a question ask the user yes/no and push the appropriate child.
+            questionCount++;
+            mvprintw(row++, 2, "Y/N");
+            refresh();
+            char text = getch();
+            if(text == 'Y'){
+                fs_push(&stack, current->yes, 1);
+            }
+            else{
+                 fs_push(&stack, current->no, 0);
+            }
+        }
+        else{ //each solution leaf display the fix and ask whether it solved the problem.
+            mvprintw(row++, 2, "Fix: %s", current->text);
+            refresh();
+            mvprintw(row++, 2, "Did this fix your problem? Y/N");
+            refresh();
+            char text = getch();
+
+            if(text == 'Y'){ //we did fix it
+
+            }else{
+            char solution[256]; //taken from AI
+            char userQuestion[256];
+            mvprintw(row++, 2, "What would fix your problem?");
+            refresh();
+
+            echo(); //taken from AI
+            getnstr(solution, 255);//taken from AI
+            noecho();
+
+            mvprintw(row++, 2, "What is a Y/N question that would distinguish your problem from the one above?");
+            refresh();
+            getnstr(userQuestion, 255);//taken from AI
+            noecho();
+
+                //now i need to create a new question node and a corresponding solution node
+
+            }
+
+        }
+    }
     fs_free(&stack);
 }
 

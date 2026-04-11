@@ -245,7 +245,7 @@ void find_shortest_path(const char *sol1, const char *sol2) {
     mvprintw(row, 2, "For %s, the path taken is: %s", sol1, text1);
     refresh();
     row++;
-    mvprintw((row), 2, "For %s, the answer is: %s", sol2, text2);
+    mvprintw((row), 2, "For %s, the path taken is: %s", sol2, text2);
     refresh();
 
 
@@ -254,11 +254,5 @@ void find_shortest_path(const char *sol1, const char *sol2) {
     free(pathNodeArr);
     fs_free(fs);
     free(fs);
-    // * PathNode array to find both leaves, build ancestor arrays for
-//  * each, find the Lowest Common Ancestor (LCA), then print:
-//  *   - The shared path of questions both solutions pass through.
-//  *   - The divergence question (LCA) and which branch leads where.
-
-
 
 }
