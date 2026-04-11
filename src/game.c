@@ -27,6 +27,20 @@ extern Hash       g_index;
  *     undo/redo, and index the new question with canonicalize/h_put.
  *
  * Edge case: if parent is NULL the root itself must be replaced.
+
+ HINT
+ ## TODO 31: `run_diagnosis`
+
+The most important thing to get right before writing the loop is parent tracking. You need to know, when you reach a solution leaf, which question node was its parent and which branch (yes or no) was taken to reach it.
+
+Initialize two variables *outside* the loop. Update them *every time* you visit a question node — not just the first time.
+
+The edge case: if the very first node in the tree is a solution leaf (no questions at all), `parent` is still NULL when the learning phase runs. The root itself must be replaced. Your Edit record needs a way to signal this case so undo can reverse it correctly.
+
+`get_input` returns a pointer to a static buffer. The next call to `get_input` overwrites that same buffer. Copy the result to a local array before calling `get_input` again.
+
+---
+
  * ---------------------------------------------------------------- */
 void run_diagnosis(void) {
     clear();

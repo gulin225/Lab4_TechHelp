@@ -89,6 +89,7 @@ int check_integrity(void) {
  //Can use DFS
  * ---------------------------------------------------------------- */
 void find_shortest_path(const char *sol1, const char *sol2) {
+    clear();
     typedef struct PathNode{
         Node* current;
         int32_t parentIndex; 
@@ -121,13 +122,11 @@ void find_shortest_path(const char *sol1, const char *sol2) {
     int sol2Idx = -1;// given from AI
 
     fs_push(fs,g_root,-1);
-    PathNode root;
-    root.current = g_root;
-    root.parentIndex = -1;
-    root.branch = -1;
     int index = 0;
 
-    pathNodeArr[0] = root;
+
+    //in this while loop, i created a pathnode arr that has all of the pathNodes inside of it, and it 
+    //looks at whether or not you took a yes or no branch, and it has the parent index
     while(!(fs_empty(fs))){
         int32_t parentIndex = -1;
         int32_t branch = -1;
@@ -135,7 +134,7 @@ void find_shortest_path(const char *sol1, const char *sol2) {
         Node* current = f.node;
 
         pathNodeArr[index].current = current;
-        if(index != 0){ //its not the root
+        if(index != 0){ //its not the root, we check to see if we took yes or no
             for(int i =0; i < index; i++){
                 if(pathNodeArr[i].current->yes == current){
                     parentIndex = i;
@@ -146,16 +145,120 @@ void find_shortest_path(const char *sol1, const char *sol2) {
                     branch = 0;
                 }
             }
+
+
             pathNodeArr[index].parentIndex = parentIndex;
+            pathNodeArr[index].branch = branch;
            //add branach to struct here
         }
+
+        if(strcmp(current->text, sol1) == 0){
+                sol1Idx = index;
+        }
+
+        if(strcmp(current->text, sol2) == 0){
+                sol2Idx = index;
+        }
+
         index++;
         if(current->isQuestion){
-        fs_push(fs, current->yes, 1)
-        fs_push(fs, current->no, 0)
+        fs_push(fs, current->yes, 1);
+        fs_push(fs, current->no, 0);
         }
     }
 
-    mvprintw(10, 2, "find_shortest_path not yet implemented.");
+    if(sol1Idx == -1 || sol2Idx == -1){
+        free(pathNodeArr);
+        free(fs);
+
+        mvprintw(10, 2, "Error: Solution not Found");
+        refresh();
+        return;
+    }
+
+    //in the second loop, we need to find their LCA, so exactly where the 2 solutions diverge
+    int* path1 = calloc(nodeCount, sizeof(int));
+    if(path1 == NULL){
+        free(pathNodeArr);
+        free(fs);
+        mvprintw(10, 2, "Error: Memory Allocation Failure");
+        refresh();
+        return;
+    }
+
+    int* path2 = calloc(nodeCount, sizeof(int));
+    if(path2 == NULL){
+        free(path1);
+        free(pathNodeArr);
+        free(fs);
+        mvprintw(10, 2, "Error: Memory Allocation Failure");
+        refresh();
+        return;
+    }
+
+    index = sol1Idx;
+    int i =0;
+    while(index != -1){ //go until you reach the parent of the root
+        path1[i] = index;
+        index = pathNodeArr[index].parentIndex;
+        i++;
+    }
+    int length1 = i;
+
+    index = sol2Idx;
+    i = 0;
+    while(index != -1){
+        path2[i] = index;
+        index = pathNodeArr[index].parentIndex;
+        i++;
+    }
+    int length2 = i;
+
+    int p1_ptr = length1 - 1; //taken from AI
+    int p2_ptr = length2 - 1;// taken from AI
+    int row = 10; //taken from AI
+
+    while((p1_ptr >= 0) && (p2_ptr >= 0) && path1[p1_ptr] == path2[p2_ptr]){
+        row = row + 1;
+        mvprintw((row), 2, "Question %d: %s", row - 10, pathNodeArr[path1[p1_ptr]].current->text);
+        refresh();
+        p1_ptr--;
+        p2_ptr--;
+    }//continue going until they don't match, the place where they stop matching is the parent question
+  //  row++;
+ //   mvprintw((row + 1), 2, "LCA Question: %s", row - 10, pathNodeArr[path1[p1_ptr + 1]].current->text);
+
+    char *text1, *text2;
+    if(pathNodeArr[path1[p1_ptr]].branch == 1){
+       text1 = "yes";
+    }
+    else{
+        text1 = "no";
+    }
+    if(pathNodeArr[path2[p2_ptr]].branch == 1){
+       text2 = "yes";
+    }
+    else{
+        text2 = "no";
+    }
+    row++;
+    mvprintw(row, 2, "For %s, the path taken is: %s", sol1, text1);
     refresh();
+    row++;
+    mvprintw((row), 2, "For %s, the answer is: %s", sol2, text2);
+    refresh();
+
+
+    free(path1);
+    free(path2);
+    free(pathNodeArr);
+    fs_free(fs);
+    free(fs);
+    // * PathNode array to find both leaves, build ancestor arrays for
+//  * each, find the Lowest Common Ancestor (LCA), then print:
+//  *   - The shared path of questions both solutions pass through.
+//  *   - The divergence question (LCA) and which branch leads where.
+
+
+
 }
