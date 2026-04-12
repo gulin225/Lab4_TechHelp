@@ -164,6 +164,7 @@ int save_tree(const char *filename) {
 
 
     q_free(q);
+    free(q);
 
     free(map);
     fclose(fp);

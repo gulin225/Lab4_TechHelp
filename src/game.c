@@ -9,6 +9,8 @@ extern EditStack  g_undo;
 extern EditStack  g_redo;
 extern Hash       g_index;
 
+
+
 /* ----------------------------------------------------------------
  * TODO 31  run_diagnosis
  *
@@ -46,11 +48,26 @@ void run_diagnosis(void) {
 
     FrameStack stack;
     fs_init(&stack); 
-    int questionCount = 0;
+    Node* parent = NULL;
+    int branch = -1; //1 = yes, 0 = no, 
+
     int row = 4;
     if(g_root == NULL) //if the root is empty, we must replace the root instead of adding a leaf
     {
+        char* solution = get_input(row++, 2, "Knowledge Base Empty. What is a solution that would fix your problem?");
+        g_root = create_solution_node(strdup(solution));
 
+        Edit edit;
+        edit.type = EDIT_INSERT_SPLIT;
+        edit.parent = NULL; //we can just set it to parent cuz the parent is set inside of the qeustion node
+        edit.wasYesChild = -1;
+        edit.oldLeaf = NULL;
+        edit.newQuestion = g_root; //taken from AI
+        edit.newLeaf = NULL;
+
+        es_push(&g_undo, edit);
+        es_clear(&g_redo); //taken from AI
+        return;
     }
     fs_push(&stack, g_root, -1); 
     /* TODO: implement */
@@ -59,14 +76,17 @@ void run_diagnosis(void) {
         Node* current = f.node;
 
         if(current->isQuestion == 1){ //if its a question ask the user yes/no and push the appropriate child.
-            questionCount++;
+            parent = current;
+            mvprintw(row++, 2, "%s", current->text);
             mvprintw(row++, 2, "Y/N");
             refresh();
             char text = getch();
-            if(text == 'Y'){
+            if(text == 'Y' || text == 'y'){
+                branch = 1;
                 fs_push(&stack, current->yes, 1);
             }
             else{
+                branch = 0;
                  fs_push(&stack, current->no, 0);
             }
         }
@@ -77,24 +97,59 @@ void run_diagnosis(void) {
             refresh();
             char text = getch();
 
-            if(text == 'Y'){ //we did fix it
-
-            }else{
-            char solution[256]; //taken from AI
-            char userQuestion[256];
-            mvprintw(row++, 2, "What would fix your problem?");
+            if(text == 'Y' || text == 'y'){ //we did fix it
+            mvprintw(row++, 2, "Glad we could help! Press any key to return to the menu.");
             refresh();
+            getch();
+            }
+            else{
+        
+            char* solution = get_input(row++, 2, "What would actually fix it? ");
+            Node* solutionNode = create_solution_node(strdup(solution));
 
-            echo(); //taken from AI
-            getnstr(solution, 255);//taken from AI
-            noecho();
 
-            mvprintw(row++, 2, "What is a Y/N question that would distinguish your problem from the one above?");
+            char* userQuestion = get_input(row++, 2, "What is a Y/N question that would distinguish your problem from the one above?");
+            Node* questionNode = create_question_node(strdup(userQuestion));
+
+            mvprintw(row++, 2, "Is the solution to your problem Y/N");
             refresh();
-            getnstr(userQuestion, 255);//taken from AI
-            noecho();
+            text = getch();
 
-                //now i need to create a new question node and a corresponding solution node
+        //now i need to create a new question node and a corresponding solution node, parent of the question node will be the
+        //parent of the current ndoe, and then the current node will be a child of the new question node
+            if(text == 'Y' || text == 'y'){
+                questionNode->yes = solutionNode;
+                questionNode->no = current;
+            }
+            else{
+                questionNode->yes = current;
+                questionNode->no = solutionNode;
+            }
+
+            if(parent == NULL){
+                
+                g_root = questionNode;
+            }
+            else{
+                    if(branch == 1){
+                        parent->yes = questionNode;
+                    }
+                    else{
+                        parent->no = questionNode;
+                    }
+                }
+
+                Edit edit;
+                edit.type = EDIT_INSERT_SPLIT;
+                edit.parent = parent; //we can just set it to parent cuz the parent is set inside of the qeustion node
+                edit.wasYesChild = branch;
+                edit.oldLeaf = current;
+                edit.newQuestion = questionNode;
+                edit.newLeaf = solutionNode;
+
+                es_push(&g_undo, edit);
+                es_clear(&g_redo); //taken from AI
+
 
             }
 

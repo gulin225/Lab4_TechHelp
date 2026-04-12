@@ -402,7 +402,6 @@ int h_put(Hash *h, const char *key, int solutionId) {
         }
         newLink->key = strdup(key);
         newLink->next = NULL;
-        prev->next = newLink;
 
         newLink->vals.capacity = 1;
         newLink->vals.count = 1;
@@ -414,6 +413,8 @@ int h_put(Hash *h, const char *key, int solutionId) {
         }
         newLinkArr[0] = solutionId;
         newLink->vals.ids = newLinkArr;
+
+        prev->next = newLink;
         h->size = h->size + 1;
         return 1;
     

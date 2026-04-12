@@ -70,6 +70,7 @@ int check_integrity(void) {
     }
     //BFS, queue root, while(queue not empty) dequee(), processnode , enqueue left, enqueue right 
     q_free(q);
+    free(q);
     return 1;
 
 }
@@ -169,6 +170,7 @@ void find_shortest_path(const char *sol1, const char *sol2) {
 
     if(sol1Idx == -1 || sol2Idx == -1){
         free(pathNodeArr);
+        fs_free(fs);
         free(fs);
 
         mvprintw(10, 2, "Error: Solution not Found");
@@ -180,6 +182,7 @@ void find_shortest_path(const char *sol1, const char *sol2) {
     int* path1 = calloc(nodeCount, sizeof(int));
     if(path1 == NULL){
         free(pathNodeArr);
+        fs_free(fs);
         free(fs);
         mvprintw(10, 2, "Error: Memory Allocation Failure");
         refresh();
@@ -190,6 +193,7 @@ void find_shortest_path(const char *sol1, const char *sol2) {
     if(path2 == NULL){
         free(path1);
         free(pathNodeArr);
+        fs_free(fs);
         free(fs);
         mvprintw(10, 2, "Error: Memory Allocation Failure");
         refresh();
