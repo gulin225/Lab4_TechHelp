@@ -224,38 +224,53 @@ void find_shortest_path(const char *sol1, const char *sol2) {
     int row = 2; 
 
     while((p1_ptr >= 0) && (p2_ptr >= 0) && path1[p1_ptr] == path2[p2_ptr]){
-        row = row + 1;
-        mvprintw((row), 2, "Question %d: %s", row - 2, pathNodeArr[path1[p1_ptr]].current->text);
-        refresh();
         p1_ptr--;
         p2_ptr--;
     }//continue going until they don't match, the place where they stop matching is the parent question
+    clear();
+    refresh();
+    mvprintw(row++, 2, "Distinguishing path between:");
+    mvprintw(row++, 4, "A: \"%s\"", sol1);
+    mvprintw(row++, 4, "B: \"%s\"", sol2);
   
+    row++;
+    mvprintw(row++, 2, "Shared path (both solutions pass through):");
+    row++;
+    int count = 1;
+    for (int i = length1 - 1; i > p1_ptr; i--) {
+        mvprintw(row++, 4, "%d: %s", count++, pathNodeArr[path1[i]].current->text);
+    }
+
+    row++;
+
+    mvprintw(row++, 2, "Divergence point (LCA):");
+
     if (p1_ptr < 0 || p2_ptr < 0) {
         row++;
         mvprintw(row, 2, "Solutions are identical or diverge at the root.");
         refresh();
     }
         else{
-    char *text1, *text2;
-    if(pathNodeArr[path1[p1_ptr]].branch == 1){
-       text1 = "yes";
-    }
-    else{
-        text1 = "no";
-    }
-    if(pathNodeArr[path2[p2_ptr]].branch == 1){
-       text2 = "yes";
-    }
-    else{
-        text2 = "no";
-    }
-    row++;
-    mvprintw(row, 2, "For %s, the path taken is: %s", sol1, text1);
-    refresh();
-    row++;
-    mvprintw((row), 2, "For %s, the path taken is: %s", sol2, text2);
-    refresh();
+            mvprintw(row++, 4, "%s", pathNodeArr[path1[p1_ptr + 1]].current->text);
+
+                char *text1, *text2;
+                if(pathNodeArr[path1[p1_ptr]].branch == 1){
+                text1 = "YES";
+                }
+                else{
+                    text1 = "NO";
+                }
+                if(pathNodeArr[path2[p2_ptr]].branch == 1){
+                text2 = "YES";
+                }
+                else{
+                    text2 = "NO";
+                }
+
+                mvprintw(row++, 6, "%s -> \"%s\"", text1, sol1);
+                mvprintw(row++, 6, "%s -> \"%s\"", text2, sol2);
+
+                refresh();
         }
 
     free(path1);
