@@ -51,12 +51,13 @@ void run_diagnosis(void) {
     Node* parent = NULL;
     int branch = -1; //1 = yes, 0 = no, 
 
-    int row = 4;
+    int row = 5;
     if(g_root == NULL) //if the root is empty, we must replace the root instead of adding a leaf
     {
-        char* solution = get_input(row++, 2, "Knowledge Base Empty. What is a solution that would fix your problem?");
-        g_root = create_solution_node(strdup(solution));
-
+        clear();
+        char* solution = get_input(row++, 2, "Knowledge Base Empty. What is a solution that would fix your problem? ");
+      //  g_root = create_solution_node(strdup(solution));
+        g_root = create_solution_node(solution);
         Edit edit;
         edit.type = EDIT_INSERT_SPLIT;
         edit.parent = NULL; 
@@ -66,6 +67,7 @@ void run_diagnosis(void) {
         edit.newLeaf = NULL;
 
         es_push(&g_undo, edit);
+        
         es_clear(&g_redo); //taken from AI
         return;
     }
@@ -74,14 +76,20 @@ void run_diagnosis(void) {
     while(!fs_empty(&stack)){
         Frame f = fs_pop(&stack);
         Node* current = f.node;
+        if (row > LINES -  6) {
+            clear();
+            attron(COLOR_PAIR(5) | A_BOLD);
+            mvprintw(0, 0, "%-80s", " Tech Support Diagnosis");
+            attroff(COLOR_PAIR(5) | A_BOLD);
+            row = 2; // Reset row to the top
+        }
 
         if(current->isQuestion == 1){ //if its a question ask the user yes/no and push the appropriate child.
             parent = current;
             mvprintw(row++, 2, "%s", current->text);
-            mvprintw(row++, 2, "Y/N");
+            int answer = get_yes_no(row++, 2, "Y/N: ");
             refresh();
-            char text = getch();
-            if(text == 'Y' || text == 'y'){
+            if(answer == 1){
                 branch = 1;
                 fs_push(&stack, current->yes, 1);
             }
@@ -93,31 +101,35 @@ void run_diagnosis(void) {
         else{ //each solution leaf display the fix and ask whether it solved the problem.
             mvprintw(row++, 2, "Fix: %s", current->text);
             refresh();
-            mvprintw(row++, 2, "Did this fix your problem? Y/N");
+            mvprintw(row++, 2, "Did this fix your problem? ");
+            int answer = get_yes_no(row++, 2, "Y/N: ");
             refresh();
-            char text = getch();
 
-            if(text == 'Y' || text == 'y'){ //we did fix it
+
+            if(answer == 1){ //we did fix it
             mvprintw(row++, 2, "Glad we could help! Press any key to return to the menu.");
             refresh();
             getch();
+            break;
             }
             else{
         
             char* solution = get_input(row++, 2, "What would actually fix it? ");
-            Node* solutionNode = create_solution_node(strdup(solution));
+          //  Node* solutionNode = create_solution_node(strdup(solution));
+            Node* solutionNode = create_solution_node(solution);
 
+            char* userQuestion = get_input(row++, 2, "What is a Y/N question that would distinguish your problem from the one above? ");
+           // Node* questionNode = create_question_node(strdup(userQuestion));
+           Node* questionNode = create_question_node(userQuestion);
+          
 
-            char* userQuestion = get_input(row++, 2, "What is a Y/N question that would distinguish your problem from the one above?");
-            Node* questionNode = create_question_node(strdup(userQuestion));
-
-            mvprintw(row++, 2, "Is the solution to your problem Y/N");
+            answer = get_yes_no(row++, 2, "For your problem, is the answer Y or N: ");
             refresh();
-            text = getch();
+
 
         //now i need to create a new question node and a corresponding solution node, parent of the question node will be the
         //parent of the current ndoe, and then the current node will be a child of the new question node
-            if(text == 'Y' || text == 'y'){
+            if(answer == 1){
                 questionNode->yes = solutionNode;
                 questionNode->no = current;
             }

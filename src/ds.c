@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include "lab4.h"
 
+extern EditStack g_undo;
+extern EditStack g_redo;
 /* ----------------------------------------------------------------
  * ds.c  --  all data structures for the Tech Support Diagnosis Tool
  *
@@ -173,7 +175,28 @@ int es_empty(EditStack *s) {
 }
 
 /* TODO 14 */
-void es_clear(EditStack *s) {
+void es_clear(EditStack *s) { //taken from AI
+if (s == &g_undo) {
+        for (int i = 0; i < s->size; i++) {
+            if (s->edits[i].oldLeaf != NULL) {
+                free_tree(s->edits[i].oldLeaf);
+            }
+        }
+    } 
+    else if (s == &g_redo) {
+        for (int i = 0; i < s->size; i++) {
+            Node* nq = s->edits[i].newQuestion;
+            Node* ol = s->edits[i].oldLeaf;
+            
+            if (nq != NULL) {
+                if (nq->yes == ol) nq->yes = NULL;
+                if (nq->no == ol) nq->no = NULL;
+                
+                free_tree(nq);
+            }
+        }
+    }
+    
     s->size = 0;
 }
 
@@ -185,7 +208,10 @@ void es_free(EditStack *s) {
     s->capacity = 0;
 }
 
-void free_edit_stack(EditStack *s) { es_free(s); }
+void free_edit_stack(EditStack *s) { 
+    es_clear(s);
+    es_free(s); 
+}
 
 
 /* ====== Queue  (linked list, BFS) ============================== */
