@@ -205,7 +205,7 @@ int undo_last_edit(void) {
         }
     }
 
-    es_push(&g_redo, edit); //push it to the 
+    es_push(&g_redo, edit); //push it to the redo stack
     
     return 1;
 }
@@ -215,5 +215,27 @@ int undo_last_edit(void) {
  * Return 1 on success, 0 if the redo stack is empty.
  * ---------------------------------------------------------------- */
 int redo_last_edit(void) {
-    return 0;
+    if(es_empty(&g_redo)){ //nothing to undo
+        return 0;
+    }
+
+    Edit edit = es_pop(&g_redo);
+    Node* parent = edit.parent; //we need to change the child of the parent to the old leaf
+
+    
+    if(parent == NULL){
+        g_root = edit.newQuestion;
+    }
+    else{
+        if(edit.wasYesChild == 1){
+            parent->yes = edit.newQuestion;
+        }
+        else{
+            parent->no = edit.newQuestion;
+        }
+    }
+
+
+    es_push(&g_undo, edit);
+    return 1;
 }
