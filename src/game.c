@@ -59,7 +59,7 @@ void run_diagnosis(void) {
 
         Edit edit;
         edit.type = EDIT_INSERT_SPLIT;
-        edit.parent = NULL; //we can just set it to parent cuz the parent is set inside of the qeustion node
+        edit.parent = NULL; 
         edit.wasYesChild = -1;
         edit.oldLeaf = NULL;
         edit.newQuestion = g_root; //taken from AI
@@ -161,9 +161,53 @@ void run_diagnosis(void) {
 /* ----------------------------------------------------------------
  * TODO 32  undo_last_edit
  * Return 1 on success, 0 if the undo stack is empty.
- * ---------------------------------------------------------------- */
-int undo_last_edit(void) {
-    return 0;
+ 
+**TODOs 32–33: Undo and redo** (`game.c`, ~1–2 hours)
+
+Each is about 12 lines. Pop from one stack, update one pointer, push to the other.
+## TODOs 32–33: Undo and redo
+
+An Edit record stores enough information to reverse or reapply exactly one tree modification:
+ which parent had a child replaced, which branch it was, what the old child was, and what the new subtree is.
+
+Do not free any nodes during undo or redo. The nodes still exist — they are just not currently in the tree. 
+A future redo may need them.
+
+typedef struct {
+    EditType  type;
+    Node     *parent;         NULL if root was replaced 
+//     int       wasYesChild;    1=yes branch, 0=no branch, -1=root */
+//     Node     *oldLeaf;        solution leaf that was replaced   */
+//     Node     *newQuestion;    new question node inserted        */
+//     Node     *newLeaf;        new solution leaf created         */
+// } Edit;
+
+// ---
+//  * ---------------------------------------------------------------- */
+int undo_last_edit(void) { 
+    //we get the last edit from the undo stack, and then we also need to push it onto the redo stack
+    if(es_empty(&g_undo)){ //nothing to undo
+        return 0;
+    }
+    Edit edit = es_pop(&g_undo);
+    Node* parent = edit.parent; //we need to change the child of the parent to the old leaf
+
+    if(parent == NULL){ //we must set g_root since that means we were inserting at the top
+        g_root = edit.oldLeaf;
+    }
+
+    else{
+        if(edit.wasYesChild == 1){
+            parent->yes = edit.oldLeaf;
+        }
+        else{
+            parent->no = edit.oldLeaf;
+        }
+    }
+
+    es_push(&g_redo, edit); //push it to the 
+    
+    return 1;
 }
 
 /* ----------------------------------------------------------------
