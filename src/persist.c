@@ -43,7 +43,7 @@ int save_tree(const char *filename) {
 
     fp = fopen(filename, "wb"); //googled this
     if(fp == NULL){
-        fclose(fp);
+
         return 0;
     }
 
@@ -247,7 +247,7 @@ uint32_t nodeCount;
         return(0);
     }
 
-    for(int i = 0; i < nodeCount; i++){//this is the first loop, looking to just get the information and reading it, 
+    for(uint32_t i = 0; i < nodeCount; i++){//this is the first loop, looking to just get the information and reading it, 
         //on second loop we must link the children, same logic as before, checking if the yesID of the current one equald the id of the
         //current node we are looking at
        uint8_t isQuestion;
@@ -326,7 +326,7 @@ uint32_t nodeCount;
 //  *     int32  noId             (-1 if NULL)
 //  *
 
-    for(int i =0; i < nodeCount; i++){ //we do this in the 2nd loop because we dont knowif that node has been created yet in the firs tloop
+    for(uint32_t i =0; i < nodeCount; i++){ //we do this in the 2nd loop because we dont knowif that node has been created yet in the firs tloop
         int indexYesID = yesIdArr[i];
         int indexNoId = noIdArr[i];
 

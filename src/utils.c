@@ -99,21 +99,21 @@ void find_shortest_path(const char *sol1, const char *sol2) {
 
 
     if (g_root == NULL) {
-        mvprintw(10, 2, "Error: knowledge base is empty.");
+        mvprintw(6, 2, "Error: knowledge base is empty.");
         refresh();
         return;
     }
 
     int nodeCount = count_nodes(g_root);
     if(nodeCount <= 0){
-        mvprintw(10, 2, "Error: knowledge base is empty.");
+        mvprintw(6, 2, "Error: knowledge base is empty.");
         refresh();
         return;
     }
 
     PathNode* pathNodeArr = calloc(nodeCount, sizeof(PathNode));
     if(pathNodeArr == NULL){
-        mvprintw(10, 2, "Error: Memory Allocation Failure");
+        mvprintw(6, 2, "Error: Memory Allocation Failure");
         refresh();
         return;
     }
@@ -148,10 +148,11 @@ void find_shortest_path(const char *sol1, const char *sol2) {
             }
 
 
-            pathNodeArr[index].parentIndex = parentIndex;
-            pathNodeArr[index].branch = branch;
+
            //add branach to struct here
         }
+            pathNodeArr[index].parentIndex = parentIndex;
+            pathNodeArr[index].branch = branch;
 
         if(strcmp(current->text, sol1) == 0){
                 sol1Idx = index;
@@ -173,7 +174,7 @@ void find_shortest_path(const char *sol1, const char *sol2) {
         fs_free(fs);
         free(fs);
 
-        mvprintw(10, 2, "Error: Solution not Found");
+        mvprintw(6, 2, "Error: Solution not Found");
         refresh();
         return;
     }
@@ -184,7 +185,7 @@ void find_shortest_path(const char *sol1, const char *sol2) {
         free(pathNodeArr);
         fs_free(fs);
         free(fs);
-        mvprintw(10, 2, "Error: Memory Allocation Failure");
+        mvprintw(6, 2, "Error: Memory Allocation Failure");
         refresh();
         return;
     }
@@ -195,7 +196,7 @@ void find_shortest_path(const char *sol1, const char *sol2) {
         free(pathNodeArr);
         fs_free(fs);
         free(fs);
-        mvprintw(10, 2, "Error: Memory Allocation Failure");
+        mvprintw(6, 2, "Error: Memory Allocation Failure");
         refresh();
         return;
     }
@@ -220,18 +221,22 @@ void find_shortest_path(const char *sol1, const char *sol2) {
 
     int p1_ptr = length1 - 1; //taken from AI
     int p2_ptr = length2 - 1;// taken from AI
-    int row = 10; //taken from AI
+    int row = 2; 
 
     while((p1_ptr >= 0) && (p2_ptr >= 0) && path1[p1_ptr] == path2[p2_ptr]){
         row = row + 1;
-        mvprintw((row), 2, "Question %d: %s", row - 10, pathNodeArr[path1[p1_ptr]].current->text);
+        mvprintw((row), 2, "Question %d: %s", row - 2, pathNodeArr[path1[p1_ptr]].current->text);
         refresh();
         p1_ptr--;
         p2_ptr--;
     }//continue going until they don't match, the place where they stop matching is the parent question
-  //  row++;
- //   mvprintw((row + 1), 2, "LCA Question: %s", row - 10, pathNodeArr[path1[p1_ptr + 1]].current->text);
-
+  
+    if (p1_ptr < 0 || p2_ptr < 0) {
+        row++;
+        mvprintw(row, 2, "Solutions are identical or diverge at the root.");
+        refresh();
+    }
+        else{
     char *text1, *text2;
     if(pathNodeArr[path1[p1_ptr]].branch == 1){
        text1 = "yes";
@@ -251,7 +256,7 @@ void find_shortest_path(const char *sol1, const char *sol2) {
     row++;
     mvprintw((row), 2, "For %s, the path taken is: %s", sol2, text2);
     refresh();
-
+        }
 
     free(path1);
     free(path2);
