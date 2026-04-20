@@ -237,7 +237,7 @@ void find_shortest_path(const char *sol1, const char *sol2) {
     mvprintw(row++, 2, "Shared path (both solutions pass through):");
     row++;
     int count = 1;
-    for (int i = length1 - 1; i > p1_ptr; i--) {
+    for (int i = length1 - 1; i > p1_ptr + 1; i--) {
         mvprintw(row++, 4, "%d: %s", count++, pathNodeArr[path1[i]].current->text);
     }
 
@@ -272,7 +272,11 @@ void find_shortest_path(const char *sol1, const char *sol2) {
 
                 refresh();
         }
-
+        
+        mvprintw(row, 0, "                                                                                ");
+        mvprintw(row, 0, "                                                                                ");
+        mvprintw(row, 0, "                                                                                ");
+        refresh();
     free(path1);
     free(path2);
     free(pathNodeArr);
